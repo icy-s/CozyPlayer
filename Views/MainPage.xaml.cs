@@ -16,12 +16,16 @@ public partial class MainPage : ContentPage
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "cozyplayer.db3");
         var db = new DatabaseService(dbPath);
         var audio = new AudioService();
-
         ViewModel = new MainViewModel(db, audio);
 
         BindingContext = ViewModel;
 
-        Task.Run(async () => await ViewModel.LoadTracks());
+        Task.Run(async () =>
+        {
+            // путь к папке Download в эмуляторе Android
+            var downloadFolder = "/storage/emulated/0/Download/";
+            await ViewModel.LoadTracksFromFolder(downloadFolder);
+        });
     }
 
     private void OnDragStarting(object sender, DragStartingEventArgs e)

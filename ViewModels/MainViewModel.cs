@@ -1,7 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
-using CozyPlayer.Models;
+﻿using CozyPlayer.Models;
 using CozyPlayer.Services;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Windows.Input;
 
 namespace CozyPlayer.ViewModels
 {
@@ -37,7 +38,6 @@ namespace CozyPlayer.ViewModels
             await _db.DeleteTrackAsync(track);
             Tracks.Remove(track);
         }
-
         public async Task MoveTrack(int fromIndex, int toIndex)
         {
             if (fromIndex == toIndex) return;
@@ -46,11 +46,48 @@ namespace CozyPlayer.ViewModels
             Tracks.RemoveAt(fromIndex);
             Tracks.Insert(toIndex, item);
 
-            // Обновляем порядок в базе данных
+            // обновляем порядок в базе данных
             for (int i = 0; i < Tracks.Count; i++)
             {
-                Tracks[i].Id = i; // Можно сделать отдельное поле Order
+                Tracks[i].Id = i;
                 await _db.SaveTrackAsync(Tracks[i]);
+            }
+
+            if (item != null)
+            {
+                try
+                {
+                    await _audio.PlayAsync(item.FilePath);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Playback error: {ex.Message}");
+                }
+            }
+        }
+        public async Task LoadTracksFromFolder(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                return;
+
+            var files = Directory.GetFiles(folderPath)
+                                 .Where(f => f.EndsWith(".mp3") || f.EndsWith(".wav") || f.EndsWith(".aac"));
+
+            int id = Tracks.Count; // чтобы id не пересекались
+            foreach (var file in files)
+            {
+                var existing = await _db.GetTrackByFilePathAsync(file);
+                if (existing != null) continue;
+
+                var track = new Track
+                {
+                    Id = id++,
+                    Title = Path.GetFileNameWithoutExtension(file),
+                    FilePath = file
+                };
+
+                await _db.SaveTrackAsync(track);
+                Tracks.Add(track);
             }
         }
     }
