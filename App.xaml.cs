@@ -1,15 +1,20 @@
-﻿namespace CozyPlayer
-{
-    public partial class App : Application
-    {
-        public App()
-        {
-            InitializeComponent();
-        }
+﻿using CozyPlayer.Services;
 
-        protected override Window CreateWindow(IActivationState? activationState)
-        {
-            return new Window(new AppShell());
-        }
+namespace CozyPlayer;
+
+public partial class App : Application
+{
+    public static DatabaseService Database { get; private set; }
+
+    public App()
+    {
+        InitializeComponent();
+
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "cozyplayer.db3");
+        Database = new DatabaseService(dbPath);
+
+        ThemeService.LoadTheme();
+
+        MainPage = new AppShell();
     }
 }

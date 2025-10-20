@@ -1,0 +1,27 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:CozyPlayer.ViewModels"
+             x:Class="CozyPlayer.Views.MainPage">
+
+    <ContentPage.BindingContext>
+        <viewmodels:MainViewModel />
+    </ContentPage.BindingContext>
+
+    <VerticalStackLayout>
+        <Label Text="CozyPlayer 🎵" FontSize="24" HorizontalOptions="Center" />
+
+        <CollectionView ItemsSource="{Binding Tracks}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="10" Margin="5">
+                        <StackLayout Orientation="Horizontal">
+                            <Label Text="{Binding Title}" FontAttributes="Bold" WidthRequest="150"/>
+                            <Button Text="▶" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=PlayCommand}" CommandParameter="{Binding}"/>
+                            <Button Text="🗑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=DeleteCommand}" CommandParameter="{Binding}"/>
+                        </StackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>
