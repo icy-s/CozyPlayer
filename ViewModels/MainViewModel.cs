@@ -25,6 +25,35 @@ namespace CozyPlayer.ViewModels
             DeleteCommand = new Command<Track>(async (track) => await DeleteTrack(track));
         }
 
+        public async Task LoadTracksFromFolder(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+            {
+                Debug.WriteLine($"[DEBUG] Папка не найдена: {folderPath}");
+                return;
+            }
+
+            var files = Directory.GetFiles(folderPath)
+                                 .Where(f => f.EndsWith(".mp3") || f.EndsWith(".wav") || f.EndsWith(".aac"))
+                                 .ToList();
+
+            int id = Tracks.Count;
+
+            foreach (var file in files)
+            {
+                var track = new Track
+                {
+                    Id = id++,
+                    Title = Path.GetFileNameWithoutExtension(file),
+                    FilePath = file
+                };
+
+                Tracks.Add(track);
+
+                Debug.WriteLine($"[DEBUG] Добавлен трек: {track.Title}");
+            }
+        }
+
         public async Task LoadTracks()
         {
             Tracks.Clear();
@@ -63,31 +92,6 @@ namespace CozyPlayer.ViewModels
                 {
                     Debug.WriteLine($"Playback error: {ex.Message}");
                 }
-            }
-        }
-        public async Task LoadTracksFromFolder(string folderPath)
-        {
-            if (!Directory.Exists(folderPath))
-                return;
-
-            var files = Directory.GetFiles(folderPath)
-                                 .Where(f => f.EndsWith(".mp3") || f.EndsWith(".wav") || f.EndsWith(".aac"));
-
-            int id = Tracks.Count; // чтобы id не пересекались
-            foreach (var file in files)
-            {
-                var existing = await _db.GetTrackByFilePathAsync(file);
-                if (existing != null) continue;
-
-                var track = new Track
-                {
-                    Id = id++,
-                    Title = Path.GetFileNameWithoutExtension(file),
-                    FilePath = file
-                };
-
-                await _db.SaveTrackAsync(track);
-                Tracks.Add(track);
             }
         }
     }
