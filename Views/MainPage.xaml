@@ -1,33 +1,82 @@
-﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:CozyPlayer.Views"
-             x:Class="CozyPlayer.Views.MainPage">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:CozyPlayer.Views"
+    xmlns:helpers="clr-namespace:CozyPlayer.Helpers"
+    x:Class="CozyPlayer.Views.MainPage"
+    x:Name="rootPage"
+    Title="CozyPlayer">
 
-    <VerticalStackLayout Padding="10">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <helpers:BoolToPlayPauseTextConverter x:Key="BoolToPlayPauseTextConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
-        <Label Text="CozyPlayer 🎵" FontSize="24" HorizontalOptions="Center" />
+    <!-- Один корневой контейнер -->
+    <VerticalStackLayout Padding="10" Spacing="10">
 
-        <Button Text="🔄 Refresh" 
-            Clicked="OnRefreshClicked" 
-            HorizontalOptions="Center" />
+        <!-- Заголовок + кнопки -->
+        <Label Text="CozyPlayer" FontSize="24" HorizontalOptions="Center" />
 
-        <Button Text="➕ Add file"
-        Clicked="OnAddFileClicked"
-        HorizontalOptions="Center" />
-        
-        <CollectionView ItemsSource="{Binding Tracks}">
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+            <Button Text="➕ Add file" Clicked="OnAddFileClicked" />
+            <Button Text="🔄 Refresh" Clicked="OnRefreshClicked" />
+        </HorizontalStackLayout>
+
+        <!-- Список треков -->
+        <CollectionView ItemsSource="{Binding Tracks}" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Frame Padding="10" Margin="5">
-                        <StackLayout Orientation="Horizontal">
-                            <Label Text="{Binding Title}" FontAttributes="Bold" WidthRequest="150"/>
-                            <Button Text="▶" Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.PlayCommand}" CommandParameter="{Binding}"/>
-                            <Button Text="🗑" Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.DeleteCommand}" CommandParameter="{Binding}"/>
-                        </StackLayout>
+                    <Frame Padding="10" Margin="5" CornerRadius="8" BorderColor="Gray">
+                        <Grid>
+                            <Grid.GestureRecognizers>
+                                <DragGestureRecognizer DragStarting="OnDragStarting" />
+                                <DropGestureRecognizer Drop="OnDrop" />
+                            </Grid.GestureRecognizers>
+
+                            <HorizontalStackLayout VerticalOptions="Center" Spacing="10">
+                                <Label Text="{Binding Title}" FontAttributes="Bold" WidthRequest="180"/>
+                                <!-- Команды берём из BindingContext страницы через x:Reference -->
+                                <Button Text="▶"
+                                        Command="{Binding BindingContext.PlayCommand, Source={x:Reference rootPage}}"
+                                        CommandParameter="{Binding}" />
+                                <Button Text="delete"
+                                        Command="{Binding BindingContext.DeleteCommand, Source={x:Reference rootPage}}"
+                                        CommandParameter="{Binding}" />
+                            </HorizontalStackLayout>
+                        </Grid>
                     </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+
+        <!-- Сейчас играющий трек и прогресс -->
+        <Label Text="{Binding CurrentTrackTitle}" 
+               x:Name="NowPlayingLabel"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"
+               Margin="0,6,0,0"/>
+
+        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center" Margin="0,2,0,0">
+            <Slider x:Name="TrackSlider"
+                    Grid.Column="0"
+                    Minimum="0" Maximum="1"
+                    Value="{Binding Progress, Mode=TwoWay}"
+                    ValueChanged="TrackSlider_ValueChanged"/>
+            <StackLayout Grid.Column="1" Orientation="Vertical" HorizontalOptions="End">
+                <Label Text="{Binding PositionText}" FontSize="12" HorizontalOptions="End"/>
+                <Label Text="{Binding DurationText}" FontSize="12" HorizontalOptions="End"/>
+            </StackLayout>
+        </Grid>
+
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="12" Margin="0,4,0,0">
+            <Button Text="{Binding IsPlaying, Converter={StaticResource BoolToPlayPauseTextConverter}}"
+                    Command="{Binding PlayPauseCommand}"
+                    WidthRequest="120"/>
+            <Label Text="{Binding KbpsText}" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
 
     </VerticalStackLayout>
 </ContentPage>
