@@ -60,7 +60,13 @@ public class MainViewModel : BaseViewModel
     // internal
     private IDispatcherTimer _timer;
     private Track _currentTrack;
-
+    public ICommand ChangeThemeCommand { get; }
+    private string _selectedTheme;
+    public string SelectedTheme
+    {
+        get => _selectedTheme;
+        set => SetProperty(ref _selectedTheme, value);
+    }
     public MainViewModel(DatabaseService db, AudioService audio)
     {
         _db = db;
@@ -75,6 +81,16 @@ public class MainViewModel : BaseViewModel
         _timer = Dispatcher.GetForCurrentThread().CreateTimer();
         _timer.Interval = TimeSpan.FromMilliseconds(500);
         _timer.Tick += (s, e) => UpdateProgress();
+
+        ChangeThemeCommand = new Command<string>(theme =>
+        {
+            if (string.IsNullOrEmpty(theme)) return;
+            ThemeService.Instance.ApplyTheme(theme);
+            SelectedTheme = theme;
+        });
+
+        // инициализация значения
+        SelectedTheme = ThemeService.Instance.CurrentTheme;
     }
 
     private async Task PlayTrack(Track track)

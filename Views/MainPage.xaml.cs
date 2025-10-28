@@ -23,6 +23,10 @@ public partial class MainPage : ContentPage
         BindingContext = ViewModel;
         _ = LoadTracksAsync();
     }
+    private async void OnOpenSettingsClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new Views.Settings() { BindingContext = this.BindingContext });
+    }
     private async Task LoadTracksAsync()
     {
         var appFolder = FileSystem.AppDataDirectory;

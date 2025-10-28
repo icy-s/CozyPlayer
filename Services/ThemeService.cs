@@ -1,18 +1,65 @@
-﻿namespace CozyPlayer.Services;
+﻿using System;
+using System.Linq;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
+using CozyPlayer.Resources.Styles;
 
-public static class ThemeService
+namespace CozyPlayer.Services
 {
-    const string ThemeKey = "AppTheme";
-
-    public static void ApplyTheme(AppTheme theme)
+    public class ThemeService
     {
-        Application.Current.UserAppTheme = theme;
-        Preferences.Set(ThemeKey, theme.ToString());
-    }
+        public const string PreferencesKey = "AppThemeKey";
+        public static readonly string DefaultTheme = "CozyGreen";
 
-    public static void LoadTheme()
-    {
-        var saved = Preferences.Get(ThemeKey, AppTheme.Light.ToString());
-        Application.Current.UserAppTheme = Enum.Parse<AppTheme>(saved);
+        public static ThemeService Instance { get; } = new ThemeService();
+
+        public event EventHandler<string> ThemeChanged;
+
+        private string _currentTheme = DefaultTheme;
+        public string CurrentTheme => _currentTheme;
+
+        private ThemeService() { }
+
+        public string[] GetAvailableThemes() => new[] { "CozyGreen", "CozyPurple", "CozyBlue" };
+
+        public void ApplySavedTheme()
+        {
+            var saved = Preferences.Get(PreferencesKey, DefaultTheme);
+            ApplyTheme(saved);
+        }
+
+        public void ApplyTheme(string themeName)
+        {
+            if (string.IsNullOrEmpty(themeName)) themeName = DefaultTheme;
+            if (_currentTheme == themeName) return;
+
+            _currentTheme = themeName;
+
+            // Удаляем все наши theme ResourceDictionaries, затем добавляем нужный
+            var appResources = Application.Current?.Resources;
+            if (appResources == null) return;
+
+            // Удаляем предыдущие словари тем (по их типам)
+            var toRemove = appResources.MergedDictionaries
+                .Where(d => d.GetType().Namespace == typeof(CozyGreen).Namespace)
+                .ToList();
+
+            foreach (var d in toRemove) appResources.MergedDictionaries.Remove(d);
+
+            // Добавляем выбранную тему
+            ResourceDictionary themeDict = themeName switch
+            {
+                "CozyPurple" => new CozyPurple(),
+                "CozyBlue" => new CozyBlue(),
+                _ => new CozyGreen()
+            };
+
+            appResources.MergedDictionaries.Add(themeDict);
+
+            // Сохраняем выбор
+            Preferences.Set(PreferencesKey, themeName);
+
+            ThemeChanged?.Invoke(this, themeName);
+        }
     }
 }
