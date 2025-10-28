@@ -4,6 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="CozyPlayer.Resources.Styles.CozyBlue">
 
+    <FileImageSource x:Key="BackgroundImage" File="blue.jpg"/>
+
     <Color x:Key="BackgroundColor">#F2F8FB</Color>
     <Color x:Key="SurfaceColor">#FFFFFF</Color>
     <Color x:Key="PrimaryColor">#2B8ED6</Color>

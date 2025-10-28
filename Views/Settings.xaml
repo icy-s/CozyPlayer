@@ -1,15 +1,10 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:helpers="clr-namespace:CozyPlayer.Helpers"
-    x:Class="CozyPlayer.Views.Settings"
-    Title="{helpers:Translate Text=Button_Settings}"
-    BackgroundColor="{DynamicResource BackgroundColor}">
-
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:helpers="clr-namespace:CozyPlayer.Helpers"
+             x:Class="CozyPlayer.Views.Settings"
+             Title="{helpers:Translate Text=Button_Settings}"
+             BackgroundColor="{DynamicResource BackgroundColor}">
     <VerticalStackLayout Padding="12" Spacing="16">
-
-        <!-- Выбор темы -->
         <Label Text="{helpers:Translate Text=ChooseThemeLabel}" TextColor="{DynamicResource TextColor}" />
         <HorizontalStackLayout Spacing="8">
             <RadioButton Content="🌿 Cozy Green" GroupName="themes" Value="CozyGreen" CheckedChanged="OnThemeChanged"/>
@@ -17,14 +12,10 @@
             <RadioButton Content="🔵 Cozy Blue" GroupName="themes" Value="CozyBlue" CheckedChanged="OnThemeChanged"/>
         </HorizontalStackLayout>
 
-        <!-- Выбор языка -->
         <Label Text="{helpers:Translate Text=ChooseLanguageLabel}" TextColor="{DynamicResource TextColor}" />
         <HorizontalStackLayout Spacing="8">
-            <Button Text="🇪🇪 Eesti" Clicked="OnLanguageClicked" CommandParameter="et"
-                    BackgroundColor="{DynamicResource AccentColor}" TextColor="{DynamicResource SurfaceColor}" />
-            <Button Text="🇬🇧 English" Clicked="OnLanguageClicked" CommandParameter="en"
-                    BackgroundColor="{DynamicResource AccentColor}" TextColor="{DynamicResource SurfaceColor}" />
+            <Button Text="🇪🇪 Eesti" Clicked="OnLanguageClicked" CommandParameter="et" BackgroundColor="{DynamicResource AccentColor}" TextColor="{DynamicResource SurfaceColor}" />
+            <Button Text="🇬🇧 English" Clicked="OnLanguageClicked" CommandParameter="en" BackgroundColor="{DynamicResource AccentColor}" TextColor="{DynamicResource SurfaceColor}" />
         </HorizontalStackLayout>
-
     </VerticalStackLayout>
 </ContentPage>

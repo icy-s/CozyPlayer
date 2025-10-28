@@ -4,6 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="CozyPlayer.Resources.Styles.CozyPurple">
 
+    <FileImageSource x:Key="BackgroundImage" File="purple.jpg"/>
+
     <Color x:Key="BackgroundColor">#F6F3FB</Color>
     <Color x:Key="SurfaceColor">#FFFFFF</Color>
     <Color x:Key="PrimaryColor">#6B46C1</Color>

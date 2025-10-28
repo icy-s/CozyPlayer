@@ -12,7 +12,7 @@ public partial class App : Application
         InitializeComponent();
 
         // apply theme
-        CozyPlayer.Services.ThemeService.Instance.ApplySavedTheme();
+        ThemeService.Instance.ApplySavedTheme();
 
         // apply saved language (if there is one)
         var saved = Preferences.Get("AppLanguage", null);
