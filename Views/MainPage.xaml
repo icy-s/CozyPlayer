@@ -6,7 +6,7 @@
     xmlns:helpers="clr-namespace:CozyPlayer.Helpers"
     x:Class="CozyPlayer.Views.MainPage"
     x:Name="rootPage"
-    Title="CozyPlayer">
+    Title="Cozy Player">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -18,7 +18,7 @@
     <VerticalStackLayout Padding="10" Spacing="10">
 
         <!-- Заголовок + кнопки -->
-        <Label Text="CozyPlayer" FontSize="24" HorizontalOptions="Center" />
+        <Label Text="Cozy Player" FontSize="24" HorizontalOptions="Center" />
 
         <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
             <Button Text="➕ Add file" Clicked="OnAddFileClicked" />
@@ -37,12 +37,12 @@
                             </Grid.GestureRecognizers>
 
                             <HorizontalStackLayout VerticalOptions="Center" Spacing="10">
-                                <Label Text="{Binding Title}" FontAttributes="Bold" WidthRequest="180"/>
+                                <Label Text="{Binding Title}" FontAttributes="Bold" WidthRequest="250"/>
                                 <!-- Команды берём из BindingContext страницы через x:Reference -->
                                 <Button Text="▶"
                                         Command="{Binding BindingContext.PlayCommand, Source={x:Reference rootPage}}"
                                         CommandParameter="{Binding}" />
-                                <Button Text="delete"
+                                <Button Text="🗑️"
                                         Command="{Binding BindingContext.DeleteCommand, Source={x:Reference rootPage}}"
                                         CommandParameter="{Binding}" />
                             </HorizontalStackLayout>
