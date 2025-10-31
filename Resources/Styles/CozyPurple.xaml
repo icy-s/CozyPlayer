@@ -2,22 +2,26 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-     x:Class="CozyPlayer.Resources.Styles.CozyPurple">
+    x:Class="CozyPlayer.Resources.Styles.CozyPurple">
 
+    <!-- Background image for this theme -->
     <FileImageSource x:Key="BackgroundImage" File="purple.jpg"/>
 
-    <Color x:Key="BackgroundColor">#F6F3FB</Color>
+    <!-- Color palette -->
+    <Color x:Key="BackgroundColor">#F6F2FB</Color>
     <Color x:Key="SurfaceColor">#FFFFFF</Color>
-    <Color x:Key="PrimaryColor">#6B46C1</Color>
-    <Color x:Key="AccentColor">#C9B3E6</Color>
-    <Color x:Key="TextColor">#22143B</Color>
+    <Color x:Key="PrimaryColor">#7C4DFF</Color>
+    <Color x:Key="AccentColor">#C7A4FF</Color>
+    <Color x:Key="TextColor">#2D114B</Color>
 
+    <!-- Label style -->
     <Style x:Key="TitleLabelStyle" TargetType="Label">
         <Setter Property="FontAttributes" Value="Bold"/>
         <Setter Property="TextColor" Value="{StaticResource TextColor}"/>
         <Setter Property="FontSize" Value="18"/>
     </Style>
 
+    <!-- Buttons -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
         <Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" />
         <Setter Property="TextColor" Value="White" />
@@ -32,6 +36,7 @@
         <Setter Property="Padding" Value="10,6" />
     </Style>
 
+    <!-- Cards -->
     <Style x:Key="CardFrameStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="{StaticResource SurfaceColor}" />
         <Setter Property="CornerRadius" Value="12"/>

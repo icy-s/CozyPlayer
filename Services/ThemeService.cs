@@ -33,7 +33,6 @@ namespace CozyPlayer.Services
 
             Debug.WriteLine($"[ThemeService] Applying theme: {themeName}");
 
-            // Remove old theme dictionaries (from our namespace)
             var themeNamespace = typeof(CozyGreen).Namespace;
             var toRemove = Application.Current.Resources.MergedDictionaries
                 .Where(d => d.GetType().Namespace == themeNamespace)
@@ -42,7 +41,6 @@ namespace CozyPlayer.Services
             foreach (var d in toRemove)
                 Application.Current.Resources.MergedDictionaries.Remove(d);
 
-            // Create new ResourceDictionary from XAML type
             ResourceDictionary dict = themeName switch
             {
                 "CozyBlue" => new CozyBlue(),
@@ -50,13 +48,13 @@ namespace CozyPlayer.Services
                 _ => new CozyGreen(),
             };
 
+            Debug.WriteLine($"[ThemeService] Loaded dict type: {dict.GetType()}");
+            Debug.WriteLine($"[ThemeService] Contains BackgroundImage: {dict.ContainsKey("BackgroundImage")}");
+
             Application.Current.Resources.MergedDictionaries.Add(dict);
-
-            // Save preference
             Preferences.Set(KEY, themeName);
-
-            // Notify subscribers
             ThemeChanged?.Invoke(this, themeName);
         }
+
     }
 }

@@ -66,9 +66,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Resources\Styles\CozyGreen.xaml" />
-		<Content Include="Resources\Styles\CozyBlue.xaml" />
-		<Content Include="Resources\Styles\CozyPurple.xaml" />
+	  <MauiImage Update="Resources\Images\blue.jpg">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </MauiImage>
+	  <MauiImage Update="Resources\Images\green.jpg">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </MauiImage>
+	  <MauiImage Update="Resources\Images\purple.jpg">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </MauiImage>
 	</ItemGroup>
 
 </Project>

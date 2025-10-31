@@ -19,7 +19,7 @@
         <Image x:Name="BackgroundImage"
                Source="{DynamicResource BackgroundImage}"
                Aspect="AspectFill"
-               Opacity="0"
+               Opacity="0.5"
                InputTransparent="True"
                HorizontalOptions="Fill"
                VerticalOptions="Fill" />
