@@ -22,6 +22,8 @@ public partial class MainPage : ContentPage
         ViewModel = new MainViewModel(db, audio);
         BindingContext = ViewModel;
         _ = LoadTracksAsync();
+        ThemeService.Instance.ThemeChanged += OnThemeChanged;
+        FadeInBackground();
     }
     private async void OnOpenSettingsClicked(object sender, EventArgs e)
     {
@@ -127,5 +129,21 @@ catch (Exception ex)
 
         // Можно добавить debounce — но для простоты вызываем Seek сразу
         ViewModel.SeekCommand.Execute(e.NewValue);
+    }
+    private async void OnThemeChanged(object sender, string themeName)
+    {
+        await FadeOutBackground();
+        // Force refresh of dynamic resource
+        BackgroundImage.Source = (ImageSource)Application.Current.Resources["BackgroundImage"];
+        await FadeInBackground();
+    }
+    private async Task FadeOutBackground()
+    {
+        await BackgroundImage.FadeTo(0, 250);
+    }
+
+    private async Task FadeInBackground()
+    {
+        await BackgroundImage.FadeTo(0.5, 250); // match opacity in XAML
     }
 }

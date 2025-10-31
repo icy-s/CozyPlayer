@@ -10,27 +10,25 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <!-- Конвертер текста Play / Pause (если у тебя уже есть в App.xaml, можно убрать) -->
             <helpers:BoolToPlayPauseTextConverter x:Key="BoolToPlayPauseTextConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <!-- Root grid: фон (Image) + содержимое поверх -->
     <Grid>
-
-        <!-- Фоновая картинка (должна быть ключ BackgroundImage в теме) -->
-        <Image Source="{DynamicResource BackgroundImage}"
+        <!-- Background Image with fade animation -->
+        <Image x:Name="BackgroundImage"
+               Source="{DynamicResource BackgroundImage}"
                Aspect="AspectFill"
-               Opacity="0.5"
+               Opacity="0"
                InputTransparent="True"
                HorizontalOptions="Fill"
                VerticalOptions="Fill" />
 
-        <!-- Основной контент поверх фоновой картинки -->
+        <!-- Overlay content -->
         <ScrollView>
             <VerticalStackLayout Padding="12" Spacing="12">
 
-                <!-- Header: заголовок и кнопка Settings справа -->
+                <!-- Header -->
                 <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center" Margin="0">
                     <Label Text="{helpers:Translate Text=Title}"
                            FontAttributes="Bold"
@@ -40,7 +38,7 @@
                            TextColor="{DynamicResource TextColor}" />
                 </Grid>
 
-                <!-- Add / Refresh -->
+                <!-- Buttons -->
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
                     <Button Text="{helpers:Translate Text=Button_AddFile}"
                             Clicked="OnAddFileClicked"
@@ -52,15 +50,14 @@
                             BackgroundColor="{DynamicResource AccentColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6" />
-                    <Button Grid.Column="1"
-                            Text="{helpers:Translate Text=Button_Settings}"
+                    <Button Text="{helpers:Translate Text=Button_Settings}"
                             Clicked="OnOpenSettingsClicked"
                             BackgroundColor="{DynamicResource AccentColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6" />
                 </HorizontalStackLayout>
 
-                <!-- CollectionView треков -->
+                <!-- Tracks CollectionView -->
                 <CollectionView ItemsSource="{Binding Tracks}" SelectionMode="None" Margin="0">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -72,17 +69,13 @@
                                            Text="{Binding Title}"
                                            VerticalOptions="Center"
                                            TextColor="{DynamicResource TextColor}" />
-
-                                    <Button Grid.Column="1"
-                                            Text="▶️"
+                                    <Button Grid.Column="1" Text="▶️"
                                             Command="{Binding BindingContext.PlayCommand, Source={x:Reference rootPage}}"
                                             CommandParameter="{Binding}"
                                             BackgroundColor="Transparent"
                                             TextColor="{DynamicResource PrimaryColor}"
                                             Padding="6"/>
-
-                                    <Button Grid.Column="2"
-                                            Text="🗑️"
+                                    <Button Grid.Column="2" Text="🗑️"
                                             Command="{Binding BindingContext.DeleteCommand, Source={x:Reference rootPage}}"
                                             CommandParameter="{Binding}"
                                             BackgroundColor="Transparent"
@@ -94,7 +87,7 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
-                <!-- Now playing + Slider + Controls -->
+                <!-- Now Playing -->
                 <Label Text="{Binding CurrentTrackTitle}"
                        HorizontalOptions="Center"
                        TextColor="{DynamicResource TextColor}"
@@ -106,7 +99,6 @@
                             Minimum="0" Maximum="1"
                             Value="{Binding Progress, Mode=TwoWay}"
                             ValueChanged="TrackSlider_ValueChanged" />
-
                     <StackLayout Grid.Column="1" Orientation="Vertical" HorizontalOptions="End">
                         <Label Text="{Binding PositionText}" FontSize="12" HorizontalOptions="End" TextColor="{DynamicResource TextColor}"/>
                         <Label Text="{Binding DurationText}" FontSize="12" HorizontalOptions="End" TextColor="{DynamicResource TextColor}"/>
@@ -124,6 +116,5 @@
 
             </VerticalStackLayout>
         </ScrollView>
-
     </Grid>
 </ContentPage>
