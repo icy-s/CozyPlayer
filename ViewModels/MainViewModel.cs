@@ -18,12 +18,15 @@ namespace CozyPlayer.ViewModels
         private string _durationText = "00:00";
         private string _kbpsText = "";
         private bool _progressTimerStarted;
+        private bool _isSeeking;
 
         public ObservableCollection<Track> Tracks { get; set; } = new();
 
         public ICommand PlayCommand { get; }
         public ICommand DeleteCommand { get; }
         public ICommand PlayPauseCommand { get; }
+
+        private readonly AudioService _audioService = new();
 
         public MainViewModel(DatabaseService db, IAudioManager audioManager)
         {
@@ -45,7 +48,42 @@ namespace CozyPlayer.ViewModels
         public double Progress
         {
             get => _progress;
-            set => SetProperty(ref _progress, value);
+            set
+            {
+                if (Math.Abs(_progress - value) > 0.001)
+                {
+                    _progress = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsSeeking
+        {
+            get => _isSeeking;
+            set
+            {
+                if (_isSeeking != value)
+                {
+                    _isSeeking = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private async Task UpdateProgressLoopAsync()
+        {
+            while (IsPlaying && _player != null)
+            {
+                if (!_isSeeking)
+                {
+                    Progress = _player.CurrentPosition / _player.Duration;
+                    PositionText = TimeSpan.FromSeconds(_player.CurrentPosition).ToString(@"mm\:ss");
+                    DurationText = TimeSpan.FromSeconds(_player.Duration).ToString(@"mm\:ss");
+                }
+
+                await Task.Delay(200);
+            }
         }
 
 
@@ -90,12 +128,13 @@ namespace CozyPlayer.ViewModels
                 _player = null;
 
                 var stream = File.OpenRead(track.FilePath);
-                _player = _audioManager.CreatePlayer(stream);
+                _player = _audioManager.CreatePlayer(stream);   
 
                 _currentTrack = track;
                 OnPropertyChanged(nameof(CurrentTrackTitle));
 
                 _player.Play();
+                _ = UpdateProgressLoopAsync();
                 IsPlaying = true;
 
                 UpdateRealBitrate(track);
@@ -207,6 +246,17 @@ namespace CozyPlayer.ViewModels
             _player.Seek(target);                 // <- correct API: seconds
             _progress = target / dur;             // keep UI in sync
             OnPropertyChanged(nameof(Progress));
+        }
+
+        public void SeekPreview(double fraction)
+        {
+            if (_audioService == null || _audioService.Duration <= 0)
+                return;
+
+            var previewPosition = _audioService.Duration * Math.Clamp(fraction, 0, 1);
+
+            // Update the time label while dragging, without actually seeking yet
+            PositionText = TimeSpan.FromSeconds(previewPosition).ToString(@"mm\:ss");
         }
 
 

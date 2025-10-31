@@ -102,11 +102,25 @@ namespace CozyPlayer.Views
         {
             await Navigation.PushAsync(new Settings());
         }
+        private void OnSliderDragStarted(object sender, EventArgs e)
+        {
+            if (BindingContext is MainViewModel vm)
+                vm.IsSeeking = true;
+        }
 
-        // ✅ Track slider change handler
+        private void OnSliderDragCompleted(object sender, EventArgs e)
+        {
+            if (BindingContext is MainViewModel vm)
+            {
+                vm.SeekToFraction(vm.Progress);
+                vm.IsSeeking = false;
+            }
+        }
+
         private void TrackSlider_ValueChanged(object sender, ValueChangedEventArgs e)
         {
-            // Progress binding handled in ViewModel
+            if (BindingContext is MainViewModel vm && vm.IsSeeking)
+                vm.SeekPreview(e.NewValue);
         }
 
         // ✅ Smooth fade animation when theme changes

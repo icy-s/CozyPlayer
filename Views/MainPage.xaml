@@ -32,7 +32,7 @@
                 <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center" Margin="0">
                     <Label Text="{helpers:Translate Text=Title}"
                            FontAttributes="Bold"
-                           FontSize="20"
+                           FontSize="25"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"
                            TextColor="{DynamicResource TextColor}" />
@@ -45,19 +45,22 @@
                             BackgroundColor="{DynamicResource AccentColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6"
-                            FontSize="17"/>
+                            FontSize="18"
+                            FontFamily="Goldoni"/>
                     <Button Text="{helpers:Translate Text=Button_Refresh}"
                             Clicked="OnRefreshClicked"
                             BackgroundColor="{DynamicResource AccentColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6"
-                            FontSize="17"/>
+                            FontSize="18"
+                            FontFamily="Goldoni"/>
                     <Button Text="{helpers:Translate Text=Button_Settings}"
                             Clicked="OnOpenSettingsClicked"
                             BackgroundColor="{DynamicResource AccentColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6"
-                            FontSize="17"/>
+                            FontSize="18"
+                            FontFamily="Goldoni"/>
                 </HorizontalStackLayout>
 
                 <!-- Tracks CollectionView -->
@@ -93,31 +96,35 @@
                 <!-- Now Playing -->
                 <Label Text="{Binding CurrentTrackTitle}"
                        HorizontalOptions="Center"
+                       FontSize="19"
                        TextColor="{DynamicResource TextColor}"
                        FontAttributes="Bold"/>
 
                 <Grid ColumnDefinitions="*,Auto">
                     <Slider x:Name="TrackSlider"
-                            Grid.Column="0"
-                            Minimum="0" Maximum="1"
-                            Value="{Binding Progress, Mode=TwoWay}"
-                            ValueChanged="TrackSlider_ValueChanged" />
+                        Minimum="0" Maximum="1"
+                        Value="{Binding Progress, Mode=TwoWay}"
+                        DragStarted="OnSliderDragStarted"
+                        DragCompleted="OnSliderDragCompleted"
+                        ValueChanged="TrackSlider_ValueChanged" />
                     <StackLayout Grid.Column="1" Orientation="Vertical" HorizontalOptions="End">
-                        <Label Text="{Binding PositionText}" FontSize="12" HorizontalOptions="End" TextColor="{DynamicResource TextColor}"/>
-                        <Label Text="{Binding DurationText}" FontSize="12" HorizontalOptions="End" TextColor="{DynamicResource TextColor}"/>
+                        <Label Text="{Binding PositionText}" FontSize="14" HorizontalOptions="End" TextColor="{DynamicResource TextColor}"/>
+                        <Label Text="{Binding DurationText}" FontSize="14" HorizontalOptions="End" TextColor="{DynamicResource TextColor}"/>
                     </StackLayout>
                 </Grid>
 
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
                     <Button Text="{Binding IsPlaying, Converter={StaticResource BoolToPlayPauseTextConverter}}"
                             Command="{Binding PlayPauseCommand}"
+                            FontFamily="Goldoni"
                             BackgroundColor="{DynamicResource PrimaryColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6" WidthRequest="140"
-                            FontSize="20"/>
+                            FontSize="25"/>
                 </HorizontalStackLayout>
                 <HorizontalStackLayout>
-                    <Label Text="{Binding KbpsText}" FontSize="15" HorizontalOptions="Center" Padding="163,6" TextColor="{DynamicResource TextColor}"/>
+                    <Label Text="{Binding KbpsText}" FontSize="21" FontFamily="Goldoni" HorizontalOptions="Center"
+                           Padding="153,6" TextColor="{DynamicResource TextColor}"/>
                 </HorizontalStackLayout>
 
             </VerticalStackLayout>
