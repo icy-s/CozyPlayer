@@ -2,20 +2,172 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:helpers="clr-namespace:CozyPlayer.Helpers"
              x:Class="CozyPlayer.Views.Settings"
-             Title="{helpers:Translate Text=Button_Settings}"
-             BackgroundColor="{DynamicResource BackgroundColor}">
-    <VerticalStackLayout Padding="12" Spacing="16">
-        <Label Text="{helpers:Translate Text=ChooseThemeLabel}" TextColor="{DynamicResource TextColor}" />
-        <HorizontalStackLayout Spacing="8">
-            <RadioButton Content="🌿 Cozy Green" GroupName="themes" Value="CozyGreen" CheckedChanged="OnThemeChanged"/>
-            <RadioButton Content="💜 Cozy Purple" GroupName="themes" Value="CozyPurple" CheckedChanged="OnThemeChanged"/>
-            <RadioButton Content="🔵 Cozy Blue" GroupName="themes" Value="CozyBlue" CheckedChanged="OnThemeChanged"/>
-        </HorizontalStackLayout>
+             Title="{helpers:Translate Text=Button_Settings}">
 
-        <Label Text="{helpers:Translate Text=ChooseLanguageLabel}" TextColor="{DynamicResource TextColor}" />
-        <HorizontalStackLayout Spacing="8">
-            <Button Text="🇪🇪 Eesti" Clicked="OnLanguageClicked" CommandParameter="et" BackgroundColor="{DynamicResource AccentColor}" TextColor="{DynamicResource SurfaceColor}" />
-            <Button Text="🇬🇧 English" Clicked="OnLanguageClicked" CommandParameter="en" BackgroundColor="{DynamicResource AccentColor}" TextColor="{DynamicResource SurfaceColor}" />
-        </HorizontalStackLayout>
-    </VerticalStackLayout>
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="24">
+
+            <Label Text="{helpers:Translate Text=ChooseLanguageLabel}"
+       FontSize="22"
+       FontAttributes="Bold"
+       HorizontalOptions="Center"
+       HorizontalTextAlignment="Center"
+       Margin="0,10,0,0"
+       TextColor="{DynamicResource TextColor}" />
+
+            <HorizontalStackLayout HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Spacing="16"
+                       Margin="0,0,0,10">
+
+                <Button Text="🇪🇪 Eesti"
+            Clicked="OnLanguageClicked"
+            CommandParameter="et"
+            BackgroundColor="{DynamicResource AccentColor}"
+            TextColor="{DynamicResource SurfaceColor}"
+            FontSize="20"
+            CornerRadius="12"
+            Padding="14,8" />
+
+                <Button Text="🇬🇧 English"
+            Clicked="OnLanguageClicked"
+            CommandParameter="en"
+            BackgroundColor="{DynamicResource AccentColor}"
+            TextColor="{DynamicResource SurfaceColor}"
+            FontSize="20"
+            CornerRadius="12"
+            Padding="14,8" />
+            </HorizontalStackLayout>
+
+            <!-- Title -->
+            <Label Text="{helpers:Translate Text=ChooseThemeLabel}"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="{DynamicResource TextColor}" />
+
+            <!-- Theme Swatches -->
+            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto" HorizontalOptions="Center">
+
+                <!-- Cozy Green -->
+                <Border Grid.Column="0"
+                        WidthRequest="100" HeightRequest="100"
+                        Stroke="{DynamicResource AccentColor}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Margin="8"
+                        BackgroundColor="Transparent">
+
+                    <Grid>
+                        <Grid.Clip>
+                            <RoundRectangleGeometry CornerRadius="16" Rect="0,0,100,100"/>
+                        </Grid.Clip>
+
+                        <Image Source="green.jpg" Aspect="AspectFill" Opacity="0.9"/>
+
+                        <ImageButton Clicked="OnCozyGreenClicked"
+                                     BackgroundColor="Transparent"
+                                     HorizontalOptions="Fill"
+                                     VerticalOptions="Fill"/>
+
+                        <Label Text="Green"
+                               FontSize="17"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               VerticalOptions="End"
+                               HorizontalOptions="Center"
+                               Margin="0,0,0,6"/>
+
+                        <Label x:Name="GreenCheck"
+                               Text="✅"
+                               FontSize="20"
+                               IsVisible="False"
+                               VerticalOptions="Start"
+                               HorizontalOptions="End"
+                               Margin="6"/>
+                    </Grid>
+                </Border>
+
+                <!-- Cozy Blue -->
+                <Border Grid.Column="1"
+                        WidthRequest="100" HeightRequest="100"
+                        Stroke="{DynamicResource AccentColor}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Margin="8"
+                        BackgroundColor="Transparent">
+
+                    <Grid>
+                        <Grid.Clip>
+                            <RoundRectangleGeometry CornerRadius="16" Rect="0,0,100,100"/>
+                        </Grid.Clip>
+
+                        <Image Source="blue.jpg" Aspect="AspectFill" Opacity="0.9"/>
+
+                        <ImageButton Clicked="OnCozyBlueClicked"
+                                     BackgroundColor="Transparent"
+                                     HorizontalOptions="Fill"
+                                     VerticalOptions="Fill"/>
+
+                        <Label Text="Blue"
+                               FontSize="17"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               VerticalOptions="End"
+                               HorizontalOptions="Center"
+                               Margin="0,0,0,6"/>
+
+                        <Label x:Name="BlueCheck"
+                               Text="✅"
+                               FontSize="20"
+                               IsVisible="False"
+                               VerticalOptions="Start"
+                               HorizontalOptions="End"
+                               Margin="6"/>
+                    </Grid>
+                </Border>
+
+                <!-- Cozy Purple -->
+                <Border Grid.Column="2"
+                        WidthRequest="100" HeightRequest="100"
+                        Stroke="{DynamicResource AccentColor}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Margin="8"
+                        BackgroundColor="Transparent">
+
+                    <Grid>
+                        <Grid.Clip>
+                            <RoundRectangleGeometry CornerRadius="16" Rect="0,0,100,100"/>
+                        </Grid.Clip>
+
+                        <Image Source="purple.jpg" Aspect="AspectFill" Opacity="0.9"/>
+
+                        <ImageButton Clicked="OnCozyPurpleClicked"
+                                     BackgroundColor="Transparent"
+                                     HorizontalOptions="Fill"
+                                     VerticalOptions="Fill"/>
+
+                        <Label Text="Purple"
+                               FontSize="17"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               VerticalOptions="End"
+                               HorizontalOptions="Center"
+                               Margin="0,0,0,6"/>
+
+                        <Label x:Name="PurpleCheck"
+                               Text="✅"
+                               FontSize="20"
+                               IsVisible="False"
+                               VerticalOptions="Start"
+                               HorizontalOptions="End"
+                               Margin="6"/>
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

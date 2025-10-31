@@ -5,7 +5,7 @@
     xmlns:helpers="clr-namespace:CozyPlayer.Helpers"
     x:Class="CozyPlayer.Views.MainPage"
     x:Name="rootPage"
-    Title="{helpers:Translate Text=Title}"
+    Title="{helpers:Translate Text=Cozy Player}"
     BackgroundColor="Transparent">
 
     <ContentPage.Resources>
@@ -44,17 +44,20 @@
                             Clicked="OnAddFileClicked"
                             BackgroundColor="{DynamicResource PrimaryColor}"
                             TextColor="{DynamicResource SurfaceColor}"
-                            CornerRadius="10" Padding="10,6" />
+                            CornerRadius="10" Padding="10,6"
+                            FontSize="17"/>
                     <Button Text="{helpers:Translate Text=Button_Refresh}"
                             Clicked="OnRefreshClicked"
                             BackgroundColor="{DynamicResource AccentColor}"
                             TextColor="{DynamicResource SurfaceColor}"
-                            CornerRadius="10" Padding="10,6" />
+                            CornerRadius="10" Padding="10,6"
+                            FontSize="17"/>
                     <Button Text="{helpers:Translate Text=Button_Settings}"
                             Clicked="OnOpenSettingsClicked"
                             BackgroundColor="{DynamicResource AccentColor}"
                             TextColor="{DynamicResource SurfaceColor}"
-                            CornerRadius="10" Padding="10,6" />
+                            CornerRadius="10" Padding="10,6"
+                            FontSize="17"/>
                 </HorizontalStackLayout>
 
                 <!-- Tracks CollectionView -->
@@ -110,8 +113,11 @@
                             Command="{Binding PlayPauseCommand}"
                             BackgroundColor="{DynamicResource PrimaryColor}"
                             TextColor="{DynamicResource SurfaceColor}"
-                            CornerRadius="10" Padding="10,6" WidthRequest="140"/>
-                    <Label Text="{Binding KbpsText}" VerticalOptions="Center" TextColor="{DynamicResource TextColor}"/>
+                            CornerRadius="10" Padding="10,6" WidthRequest="140"
+                            FontSize="20"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Label Text="{Binding KbpsText}" FontSize="15" HorizontalOptions="Center" Padding="163,6" TextColor="{DynamicResource TextColor}"/>
                 </HorizontalStackLayout>
 
             </VerticalStackLayout>

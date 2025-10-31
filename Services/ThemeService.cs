@@ -21,7 +21,7 @@ namespace CozyPlayer.Services
             ApplyTheme(theme);
         }
 
-        public void ApplyTheme(string themeName)
+        public async void ApplyTheme(string themeName)
         {
             if (string.IsNullOrEmpty(themeName))
                 themeName = "CozyGreen";
@@ -33,14 +33,26 @@ namespace CozyPlayer.Services
 
             Debug.WriteLine($"[ThemeService] Applying theme: {themeName}");
 
+            var app = Application.Current;
+            if (app?.MainPage == null)
+            {
+                Debug.WriteLine("[ThemeService] MainPage is null, skipping animation");
+                return;
+            }
+
+            // 🔹 Fade out
+            await app.MainPage.FadeTo(0, 250, Easing.CubicOut);
+
+            // Remove previous themes
             var themeNamespace = typeof(CozyGreen).Namespace;
-            var toRemove = Application.Current.Resources.MergedDictionaries
+            var toRemove = app.Resources.MergedDictionaries
                 .Where(d => d.GetType().Namespace == themeNamespace)
                 .ToList();
 
             foreach (var d in toRemove)
-                Application.Current.Resources.MergedDictionaries.Remove(d);
+                app.Resources.MergedDictionaries.Remove(d);
 
+            // Add new theme
             ResourceDictionary dict = themeName switch
             {
                 "CozyBlue" => new CozyBlue(),
@@ -48,13 +60,14 @@ namespace CozyPlayer.Services
                 _ => new CozyGreen(),
             };
 
-            Debug.WriteLine($"[ThemeService] Loaded dict type: {dict.GetType()}");
-            Debug.WriteLine($"[ThemeService] Contains BackgroundImage: {dict.ContainsKey("BackgroundImage")}");
-
-            Application.Current.Resources.MergedDictionaries.Add(dict);
+            app.Resources.MergedDictionaries.Add(dict);
             Preferences.Set(KEY, themeName);
+
+            // 🔹 Fade back in
+            await app.MainPage.FadeTo(1, 250, Easing.CubicIn);
+
+            // Notify listeners
             ThemeChanged?.Invoke(this, themeName);
         }
-
     }
 }

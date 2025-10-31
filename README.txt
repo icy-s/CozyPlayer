@@ -19,3 +19,7 @@ Tehnoloogiad:
 - Plugin.Maui.Audio  
 - Preferences API  
 - .resx lokaliseerimine
+
+Mis töötab, mis jäi pooleli
+Muusika mängib, aga katkestusega. Proovisin parandada seda, aga praegu tulemused ei ole.
+Töötab teemade ja keelede valik, failide lisamine, drag n drop, dünaamilised sätted.
