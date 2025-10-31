@@ -7,9 +7,8 @@ namespace CozyPlayer.Models
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
         public string Title { get; set; }
-        public string Artist { get; set; }
         public string FilePath { get; set; }
-        public bool IsFavorite { get; set; }
-        public int Order { get; set; }
+        public string Duration { get; set; }
+        public int Bitrate { get; set; }
     }
 }

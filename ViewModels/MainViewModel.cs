@@ -1,357 +1,238 @@
-﻿using CozyPlayer.Models;
-using CozyPlayer.Services;
-using Microsoft.Maui.Dispatching;
-using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CozyPlayer.Models;
+using CozyPlayer.Services;
+using Plugin.Maui.Audio;
 
-namespace CozyPlayer.ViewModels;
-
-public class MainViewModel : BaseViewModel
+namespace CozyPlayer.ViewModels
 {
-    private readonly DatabaseService _db;
-    private readonly AudioService _audio;
-
-    public ObservableCollection<Track> Tracks { get; set; } = new();
-
-    public ICommand PlayCommand { get; }
-    public ICommand DeleteCommand { get; }
-    public ICommand PlayPauseCommand { get; }
-    public ICommand SeekCommand { get; }
-
-    private bool _isPlaying;
-    public bool IsPlaying
+    public class MainViewModel : BaseViewModel
     {
-        get => _isPlaying;
-        set => SetProperty(ref _isPlaying, value);
-    }
+        private readonly DatabaseService _db;
+        private readonly IAudioManager _audioManager;
+        private IAudioPlayer _player;
+        private Track _currentTrack;
+        private bool _isPlaying;
+        private double _progress;
+        private string _positionText = "00:00";
+        private string _durationText = "00:00";
+        private string _kbpsText = "";
+        private bool _progressTimerStarted;
 
-    private double _progress; // 0..1
-    public double Progress
-    {
-        get => _progress;
-        set => SetProperty(ref _progress, value);
-    }
+        public ObservableCollection<Track> Tracks { get; set; } = new();
 
-    private string _positionText = "00:00";
-    public string PositionText
-    {
-        get => _positionText;
-        set => SetProperty(ref _positionText, value);
-    }
+        public ICommand PlayCommand { get; }
+        public ICommand DeleteCommand { get; }
+        public ICommand PlayPauseCommand { get; }
 
-    private string _durationText = "00:00";
-    public string DurationText
-    {
-        get => _durationText;
-        set => SetProperty(ref _durationText, value);
-    }
-
-    private string _kbpsText = "";
-    public string KbpsText
-    {
-        get => _kbpsText;
-        set => SetProperty(ref _kbpsText, value);
-    }
-
-    // internal
-    private IDispatcherTimer _timer;
-    private Track _currentTrack;
-    public ICommand ChangeThemeCommand { get; }
-    private string _selectedTheme;
-    public string SelectedTheme
-    {
-        get => _selectedTheme;
-        set => SetProperty(ref _selectedTheme, value);
-    }
-    public MainViewModel(DatabaseService db, AudioService audio)
-    {
-        _db = db;
-        _audio = audio;
-
-        PlayCommand = new Command<Track>(async (t) => await PlayTrack(t));
-        DeleteCommand = new Command<Track>(async (t) => await DeleteTrack(t));
-        PlayPauseCommand = new Command(async () => await TogglePlayPause());
-        SeekCommand = new Command<double>((val) => SeekToRelative(val)); // val = 0..1
-
-        // timer обновления прогресса
-        _timer = Dispatcher.GetForCurrentThread().CreateTimer();
-        _timer.Interval = TimeSpan.FromMilliseconds(500);
-        _timer.Tick += (s, e) => UpdateProgress();
-
-        ChangeThemeCommand = new Command<string>(theme =>
+        public MainViewModel(DatabaseService db, IAudioManager audioManager)
         {
-            if (string.IsNullOrEmpty(theme)) return;
-            ThemeService.Instance.ApplyTheme(theme);
-            SelectedTheme = theme;
-        });
+            _db = db;
+            _audioManager = audioManager;
 
-        // инициализация значения
-        SelectedTheme = ThemeService.Instance.CurrentTheme;
-    }
+            PlayCommand = new Command<Track>(async (track) => await PlayTrack(track));
+            DeleteCommand = new Command<Track>(async (track) => await DeleteTrack(track));
+            PlayPauseCommand = new Command(TogglePlayPause);
+        }
 
-    private async Task PlayTrack(Track track)
-    {
-        try
+        // ✅ Properties (Bindable)
+        public bool IsPlaying
+        {
+            get => _isPlaying;
+            set => SetProperty(ref _isPlaying, value);
+        }
+
+        public double Progress
+        {
+            get => _progress;
+            set => SetProperty(ref _progress, value);
+        }
+
+
+        public string PositionText
+        {
+            get => _positionText;
+            set => SetProperty(ref _positionText, value);
+        }
+
+        public string DurationText
+        {
+            get => _durationText;
+            set => SetProperty(ref _durationText, value);
+        }
+
+        public string KbpsText
+        {
+            get => _kbpsText;
+            set => SetProperty(ref _kbpsText, value);
+        }
+
+        public string CurrentTrackTitle => _currentTrack?.Title ?? "";
+
+        // ✅ Load tracks from database
+        public async Task LoadTracksAsync()
+        {
+            Tracks.Clear();
+            var items = await _db.GetTracksAsync();
+            foreach (var i in items)
+                Tracks.Add(i);
+        }
+
+        // ✅ Play selected track
+        private async Task PlayTrack(Track track)
         {
             if (track == null) return;
 
-            // если играется другой трек — остановим
-            if (_currentTrack != null && _currentTrack != track)
-                _audio.Stop();
-
-            _currentTrack = track;
-
-            // воспроизведение
-            await _audio.PlayAsync(track.FilePath);
-
-            // вычислим kbps
             try
             {
-                var fi = new System.IO.FileInfo(track.FilePath);
-                var duration = _audio.GetDurationSeconds();
-                if (duration > 0)
+                _player?.Stop();
+                _player?.Dispose();
+                _player = null;
+
+                var stream = File.OpenRead(track.FilePath);
+                _player = _audioManager.CreatePlayer(stream);
+
+                _currentTrack = track;
+                OnPropertyChanged(nameof(CurrentTrackTitle));
+
+                _player.Play();
+                IsPlaying = true;
+
+                UpdateRealBitrate(track);
+                EnsureProgressTimer();
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Error", $"Cannot play file:\n{ex.Message}", "OK");
+            }
+        }
+
+        private void EnsureProgressTimer()
+        {
+            if (_progressTimerStarted) return;
+
+            _progressTimerStarted = true;
+
+            Application.Current.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(500), () =>
+            {
+                if (_player == null)
                 {
-                    var kbps = Math.Round((double)fi.Length * 8 / duration / 1000.0);
+                    _progressTimerStarted = false;
+                    return false;
+                }
+
+                var dur = _player.Duration;
+                var pos = _player.CurrentPosition;
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (dur > 0)
+                    {
+                        _progress = pos / dur;
+                        OnPropertyChanged(nameof(Progress));
+                        PositionText = TimeSpan.FromSeconds(pos).ToString(@"mm\:ss");
+                        DurationText = TimeSpan.FromSeconds(dur).ToString(@"mm\:ss");
+                    }
+                });
+
+                return true;
+            });
+        }
+
+
+        // ✅ Toggle play/pause
+        private void TogglePlayPause()
+        {
+            if (_player == null) return;
+
+            if (_player.IsPlaying)
+            {
+                _player.Pause();
+                IsPlaying = false;
+            }
+            else
+            {
+                _player.Play();
+                IsPlaying = true;
+                EnsureProgressTimer();
+            }
+        }
+
+        // ✅ Delete track from DB
+        private async Task DeleteTrack(Track track)
+        {
+            if (track == null) return;
+
+            await _db.DeleteTrackAsync(track);
+            Tracks.Remove(track);
+        }
+        private void UpdateRealBitrate(Track track)
+        {
+            try
+            {
+                var fi = new FileInfo(track.FilePath);
+                var dur = _player?.Duration ?? 0;
+                if (fi.Exists && dur > 0)
+                {
+                    // kbps ≈ (bytes * 8) / seconds / 1000
+                    var kbps = (int)Math.Round((fi.Length * 8.0) / dur / 1000.0);
                     KbpsText = $"{kbps} kbps";
+
+                    // save back to DB once calculated
+                    if (kbps > 0 && track.Bitrate != kbps)
+                    {
+                        track.Bitrate = kbps;
+                        // Update only (don’t insert)
+                        _ = App.Database.SaveTrackAsync(track);
+                    }
                 }
                 else
                 {
-                    KbpsText = "";
+                    KbpsText = track.Bitrate > 0 ? $"{track.Bitrate} kbps" : "";
                 }
             }
-            catch { KbpsText = ""; }
-
-            IsPlaying = _audio.IsPlaying();
-
-            // запускаем таймер
-            if (!_timer.IsRunning) _timer.Start();
+            catch
+            {
+                KbpsText = track.Bitrate > 0 ? $"{track.Bitrate} kbps" : "";
+            }
         }
-        catch (Exception ex)
+        public void SeekToFraction(double fraction)
         {
-            System.Diagnostics.Debug.WriteLine($"[VM] PlayTrack error: {ex}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось проиграть файл: " + ex.Message, "OK");
+            if (_player == null) return;
+
+            var dur = _player.Duration;
+            if (dur <= 0) return;
+
+            var target = dur * Math.Clamp(fraction, 0, 1);
+            _player.Seek(target);                 // <- correct API: seconds
+            _progress = target / dur;             // keep UI in sync
+            OnPropertyChanged(nameof(Progress));
+        }
+
+
+        // ✅ Timer to update progress every 500ms
+        private void StartProgressTimer()
+        {
+            Application.Current.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(500), () =>
+            {
+                if (_player == null)
+                    return false;
+
+                if (_player.Duration <= 0)
+                    return true;
+
+                double position = _player.CurrentPosition;
+                double duration = _player.Duration;
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Progress = position / duration;
+                    PositionText = TimeSpan.FromSeconds(position).ToString(@"mm\:ss");
+                    DurationText = TimeSpan.FromSeconds(duration).ToString(@"mm\:ss");
+                });
+
+                return _player.IsPlaying;
+            });
         }
     }
-
-    private async Task TogglePlayPause()
-    {
-        try
-        {
-            if (_audio.IsPlaying())
-            {
-                // если играет — ставим на паузу
-                _audio.Pause();
-                IsPlaying = false;
-                // таймер может оставаться, но обычно останавливаем
-                if (_timer.IsRunning) _timer.Stop();
-            }
-            else
-            {
-                // если плеер уже создан для текущего трека — resume
-                if (_audio.HasPlayer && _currentTrack != null && string.Equals(_audio.CurrentFilePath, _currentTrack.FilePath, StringComparison.OrdinalIgnoreCase))
-                {
-                    _audio.Resume();
-                    IsPlaying = true;
-                    if (!_timer.IsRunning) _timer.Start();
-                }
-                else if (_currentTrack != null)
-                {
-                    // первый запуск для текущего трека
-                    await _audio.PlayAsync(_currentTrack.FilePath);
-                    IsPlaying = _audio.IsPlaying();
-                    if (!_timer.IsRunning) _timer.Start();
-                }
-                else if (Tracks.Any())
-                {
-                    await PlayTrack(Tracks.First());
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[VM] TogglePlayPause error: {ex}");
-        }
-    }
-
-    private void SeekToRelative(double relativeValue)
-    {
-        // relativeValue: 0..1
-        var duration = _audio.GetDurationSeconds();
-        if (duration <= 0) return;
-        var seconds = relativeValue * duration;
-        _audio.Seek(seconds);
-        // сразу обновим прогресс/UI
-        UpdateProgressOnce();
-    }
-
-    private void UpdateProgress()
-    {
-        try
-        {
-            var duration = _audio.GetDurationSeconds();
-            var pos = _audio.GetPositionSeconds();
-
-            if (duration > 0)
-            {
-                Progress = Math.Clamp(pos / duration, 0, 1);
-                PositionText = TimeSpan.FromSeconds(pos).ToString(@"mm\:ss");
-                DurationText = TimeSpan.FromSeconds(duration).ToString(@"mm\:ss");
-            }
-            else
-            {
-                Progress = 0;
-                PositionText = TimeSpan.FromSeconds(pos).ToString(@"mm\:ss");
-                DurationText = "00:00";
-            }
-
-            IsPlaying = _audio.IsPlaying();
-
-            // если проигрывание закончилось — остановим таймер
-            if (!IsPlaying && Math.Abs(Progress - 1.0) < 0.001)
-            {
-                _timer.Stop();
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[VM] UpdateProgress error: {ex}");
-        }
-    }
-
-    private void UpdateProgressOnce()
-    {
-        // единоразовое обновление UI (не через таймер)
-        var duration = _audio.GetDurationSeconds();
-        var pos = _audio.GetPositionSeconds();
-        if (duration > 0)
-        {
-            Progress = Math.Clamp(pos / duration, 0, 1);
-            PositionText = TimeSpan.FromSeconds(pos).ToString(@"mm\:ss");
-            DurationText = TimeSpan.FromSeconds(duration).ToString(@"mm\:ss");
-        }
-    }
-
-    private async Task DeleteTrack(Track track)
-    {
-        if (track == null) return;
-        _audio.Stop();
-        await _db.DeleteTrackAsync(track);
-        Tracks.Remove(track);
-    }
-
-    public async Task AddOrUpdateTrackFromFile(string appFilePath, string originalFileName = null)
-        {
-            // ищем по точному пути внутри приложения
-            var existing = await _db.GetTrackByFilePathAsync(appFilePath);
-            if (existing != null)
-            {
-                existing.Title = System.IO.Path.GetFileNameWithoutExtension(appFilePath);
-                existing.FilePath = appFilePath;
-                await _db.UpdateTrackAsync(existing);
-
-
-                var inColl = Tracks.FirstOrDefault(t => t.Id == existing.Id);
-                if (inColl != null)
-                {
-                    inColl.Title = existing.Title;
-                    inColl.FilePath = existing.FilePath;
-                }
-                return;
-            }
-
-            // попробовать найти по имени (если раньше добавляли внешний путь)
-            if (!string.IsNullOrEmpty(originalFileName))
-            {
-                var byName = await _db.GetTrackByFileNameAsync(originalFileName);
-                if (byName != null)
-                {
-                    byName.FilePath = appFilePath;
-                    byName.Title = System.IO.Path.GetFileNameWithoutExtension(appFilePath);
-                    await _db.UpdateTrackAsync(byName);
-                    Tracks.Add(byName);
-                    return;
-                }
-            }
-
-            var track = new Track
-            {
-                Title = System.IO.Path.GetFileNameWithoutExtension(appFilePath),
-                FilePath = appFilePath,
-                IsFavorite = false,
-                Order = Tracks.Count
-            };
-
-
-            await _db.SaveTrackAsync(track);
-            Tracks.Add(track);
-        }
-
-        public async Task LoadTracksFromFolder(string folderPath)
-        {
-            if (!System.IO.Directory.Exists(folderPath))
-            {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] Папка не найдена: {folderPath}");
-                return;
-            }
-
-
-            var files = System.IO.Directory.GetFiles(folderPath)
-            .Where(f => f.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)
-            || f.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)
-            || f.EndsWith(".m4a", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] LoadTracksFromFolder found: {files.Count} in {folderPath}");
-
-
-            foreach (var f in files)
-            {
-                if (Tracks.Any(t => string.Equals(t.FilePath, f, StringComparison.OrdinalIgnoreCase)))
-                    continue;
-
-
-                var existing = await _db.GetTrackByFilePathAsync(f);
-                if (existing != null)
-                {
-                    Tracks.Add(existing);
-                    continue;
-                }
-
-
-                var newTrack = new Track
-                {
-                    Title = System.IO.Path.GetFileNameWithoutExtension(f),
-                    FilePath = f,
-                    IsFavorite = false,
-                    Order = Tracks.Count
-                };
-                await _db.SaveTrackAsync(newTrack);
-                Tracks.Add(newTrack);
-            }
-        }
-
-        // Optional: move track (drag & drop)
-        public async Task MoveTrack(int fromIndex, int toIndex)
-        {
-            if (fromIndex == toIndex) return;
-            var item = Tracks[fromIndex];
-            Tracks.RemoveAt(fromIndex);
-            Tracks.Insert(toIndex, item);
-
-
-            for (int i = 0; i < Tracks.Count; i++)
-            {
-                Tracks[i].Order = i;
-                await _db.SaveTrackAsync(Tracks[i]);
-            }
-
-
-            // автозапуск перемещённого
-            await _audio.PlayAsync(item.FilePath);
-        }
-    }
+}

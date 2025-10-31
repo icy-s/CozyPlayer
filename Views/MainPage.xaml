@@ -42,7 +42,7 @@
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
                     <Button Text="{helpers:Translate Text=Button_AddFile}"
                             Clicked="OnAddFileClicked"
-                            BackgroundColor="{DynamicResource PrimaryColor}"
+                            BackgroundColor="{DynamicResource AccentColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6"
                             FontSize="17"/>
