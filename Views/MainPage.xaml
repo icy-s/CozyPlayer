@@ -32,7 +32,7 @@
                 <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center" Margin="0">
                     <Label Text="{helpers:Translate Text=Title}"
                            FontAttributes="Bold"
-                           FontSize="25"
+                           FontSize="22"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"
                            TextColor="{DynamicResource TextColor}" />
@@ -42,24 +42,24 @@
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
                     <Button Text="{helpers:Translate Text=Button_AddFile}"
                             Clicked="OnAddFileClicked"
-                            BackgroundColor="{DynamicResource AccentColor}"
+                            BackgroundColor="{DynamicResource PrimaryColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6"
-                            FontSize="18"
+                            FontSize="17"
                             FontFamily="Goldoni"/>
                     <Button Text="{helpers:Translate Text=Button_Refresh}"
                             Clicked="OnRefreshClicked"
-                            BackgroundColor="{DynamicResource AccentColor}"
+                            BackgroundColor="{DynamicResource PrimaryColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6"
-                            FontSize="18"
+                            FontSize="17"
                             FontFamily="Goldoni"/>
                     <Button Text="{helpers:Translate Text=Button_Settings}"
                             Clicked="OnOpenSettingsClicked"
-                            BackgroundColor="{DynamicResource AccentColor}"
+                            BackgroundColor="{DynamicResource PrimaryColor}"
                             TextColor="{DynamicResource SurfaceColor}"
                             CornerRadius="10" Padding="10,6"
-                            FontSize="18"
+                            FontSize="17"
                             FontFamily="Goldoni"/>
                 </HorizontalStackLayout>
 
